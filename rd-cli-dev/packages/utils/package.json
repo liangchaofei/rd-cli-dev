@@ -1,6 +1,6 @@
 {
   "name": "@rd-cli-dev/utils",
-  "version": "0.0.2",
+  "version": "0.0.0",
   "description": "> TODO: description",
   "author": "liangchaofei <liangchaofei.lcf@alibaba-inc.com>",
   "homepage": "https://github.com/liangchaofei/rd-cli-dev#readme",
@@ -23,5 +23,5 @@
   "bugs": {
     "url": "https://github.com/liangchaofei/rd-cli-dev/issues"
   },
-  "gitHead": "a994c88036761ce1a7fa76b7c77f88ab92220720"
+  "gitHead": "9a4f0fb1c1391e709754f0a651191d1cb1cd6f00"
 }

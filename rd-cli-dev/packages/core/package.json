@@ -26,6 +26,9 @@
   "bugs": {
     "url": "https://github.com/liangchaofei/rd-cli-dev/issues"
   },
+  "dependencies": {
+    "@rd-cli-dev/utils": "file: ../utils"
+  },
   "gitHead": "43cd420e5f1152cc37f018af864b4c48b18ae795",
   "publishConfig": {
     "access": "public"

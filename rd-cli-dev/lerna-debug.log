@@ -1,0 +1,16 @@
+0 silly argv {
+0 silly argv   _: [ 'create' ],
+0 silly argv   lernaVersion: '3.22.1',
+0 silly argv   '$0': 'lerna',
+0 silly argv   name: '@rd-cli-dev/log'
+0 silly argv }
+1 notice cli v3.22.1
+2 verbose rootPath /Users/liangchaofei/Desktop/github/rd-cli-dev/rd-cli-dev
+3 error Error: Command failed: git config --get user.email
+3 error
+3 error
+3 error     at makeError (/Users/liangchaofei/Desktop/github/rd-cli-dev/rd-cli-dev/node_modules/_execa@1.0.0@execa/index.js:174:9)
+3 error     at Function.module.exports.sync (/Users/liangchaofei/Desktop/github/rd-cli-dev/rd-cli-dev/node_modules/_execa@1.0.0@execa/index.js:338:15)
+3 error     at Object.execSync (/Users/liangchaofei/Desktop/github/rd-cli-dev/rd-cli-dev/node_modules/_@lerna_child-process@3.16.5@@lerna/child-process/index.js:26:16)
+3 error     at CreateCommand.gitConfig (/Users/liangchaofei/Desktop/github/rd-cli-dev/rd-cli-dev/node_modules/_@lerna_create@3.22.0@@lerna/create/index.js:181:34)
+3 error     at CreateCommand.initialize (/Users/liangchaofei/Desktop/github/rd-cli-dev/rd-cli-dev/node_modules/_@lerna_create@3.22.0@@lerna/create/index.js:107:47)

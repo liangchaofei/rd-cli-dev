@@ -28,8 +28,10 @@
   },
   "dependencies": {
     "@rd-cli-dev/log": "file:../../utils/log",
+    "colors": "^1.4.0",
     "import-local": "^3.1.0",
-    "npmlog": "^6.0.2"
+    "npmlog": "^6.0.2",
+    "semver": "^7.3.7"
   },
   "gitHead": "43cd420e5f1152cc37f018af864b4c48b18ae795",
   "publishConfig": {

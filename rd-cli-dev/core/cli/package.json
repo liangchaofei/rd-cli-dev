@@ -29,6 +29,7 @@
   "dependencies": {
     "@rd-cli-dev/log": "file:../../utils/log",
     "colors": "^1.4.0",
+    "dotenv": "^16.0.0",
     "import-local": "^3.1.0",
     "minimst": "^0.0.1-security",
     "npmlog": "^6.0.2",

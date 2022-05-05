@@ -4,6 +4,8 @@ module.exports = core;
 
 const semver = require('semver')
 const colors = require('colors/safe')
+const userHome = require('user-home')
+const pathExists = require('path-exists').sync;
 const pkg = require('../package.json')
 const log = require('@rd-cli-dev/log')
 const { LOWEST_NODE_VERSION } = require('./const')
@@ -12,11 +14,17 @@ function core() {
         checkPkgVersion()
         checkNodeVersion()
         checkRoot()
+        checkUserHome()
     }catch(e){
         log.error(e.message)
     }
 }
-
+// 检查用户主目录
+function checkUserHome(){
+    if(!userHome || !pathExists(userHome)){
+        throw new Error(colors.red('当前登录用户主目录不存在'))
+    }
+}
 // 检查root账户
 function checkRoot(){
     const checkRoot = require('root-check');

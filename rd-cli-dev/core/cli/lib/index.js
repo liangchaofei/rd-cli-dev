@@ -9,15 +9,37 @@ const pathExists = require('path-exists').sync;
 const pkg = require('../package.json')
 const log = require('@rd-cli-dev/log')
 const { LOWEST_NODE_VERSION } = require('./const')
+
+let args;
+
 function core() {
     try{
         checkPkgVersion()
         checkNodeVersion()
         checkRoot()
         checkUserHome()
+        checkInputArgs()
+        log.verbose('debug', 'test debug log')
     }catch(e){
         log.error(e.message)
     }
+}
+
+// 检查入惨
+function checkInputArgs(){
+    const minimst = require('minimist')
+    args = minimst(process.argv.slice(2))
+    console.log(args)
+    checArgs()
+}
+// 检查参数
+function checArgs(){
+    if(args.debug){
+        process.env.LOG_LEVEL = 'verbose'
+    }else{
+        process.env.LOG_LEVEL = 'info'
+    }
+    log.level = process.env.LOG_LEVEL; // 后置修改log level
 }
 // 检查用户主目录
 function checkUserHome(){

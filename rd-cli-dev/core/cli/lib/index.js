@@ -10,6 +10,7 @@ const pathExists = require('path-exists').sync;
 const commander = require('commander')
 const pkg = require('../package.json')
 const log = require('@rd-cli-dev/log')
+const init = require('@rd-cli-dev/init')
 const { LOWEST_NODE_VERSION, DEFAULT_CLI_HOME } = require('./const')
 
 let args;
@@ -37,6 +38,15 @@ function registryCommand(){
         .version(pkg.version)
         .option('-d, --debug','是否开启调试模式', false);
     
+
+    // init命令
+    program
+        .command('init [projectName]')
+        .option('-f, --force', '是否强制初始化项目')
+        .action(init)
+
+
+        
     // 开启debug模式
     program.on('option:debug', function(){
         if(program._optionValues.debug){

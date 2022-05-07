@@ -30,6 +30,7 @@
     "@rd-cli-dev/get-npm-info": "file:../../utils/get-npm-info",
     "@rd-cli-dev/log": "file:../../utils/log",
     "@rd-cli-dev/init": "file:../../commands/init",
+    "@rd-cli-dev/exec": "file:../exec",
     "colors": "^1.4.0",
     "commander": "^9.2.0",
     "dotenv": "^16.0.0",

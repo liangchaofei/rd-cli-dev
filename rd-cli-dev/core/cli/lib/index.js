@@ -11,39 +11,42 @@ const commander = require('commander')
 const pkg = require('../package.json')
 const log = require('@rd-cli-dev/log')
 const init = require('@rd-cli-dev/init')
+const exec = require('@rd-cli-dev/exec')
 const { LOWEST_NODE_VERSION, DEFAULT_CLI_HOME } = require('./const')
 
-let args;
 const program = new commander.Command()
 async function core() {
     try{
-        checkPkgVersion()
-        checkNodeVersion()
-        checkRoot()
-        checkUserHome()
-        // checkInputArgs()
-        checkEnv()
-        await checkGlobalUpdate()
+       await prepare()
         registryCommand()
     }catch(e){
         log.error(e.message)
     }
 }
-
+// 准备阶段
+async function prepare(){
+    checkPkgVersion()
+    checkNodeVersion()
+    checkRoot()
+    checkUserHome()
+    checkEnv()
+    await checkGlobalUpdate()
+}
 // 命令注册
 function registryCommand(){
     program
         .name(Object.keys(pkg.bin)[0])
         .usage('<command> [options]')
         .version(pkg.version)
-        .option('-d, --debug','是否开启调试模式', false);
+        .option('-d, --debug','是否开启调试模式', false)
+        .option('-tp, --targetPath <targetPath>', '是否指定本地调试文件路径', '')
     
 
     // init命令
     program
         .command('init [projectName]')
         .option('-f, --force', '是否强制初始化项目')
-        .action(init)
+        .action(exec)
 
 
         
@@ -56,6 +59,12 @@ function registryCommand(){
         }
         log.level = process.env.LOG_LEVEL;
         log.verbose('test')
+    })
+    // 指定targetPath
+    program.on('option:targetPath',function(){
+        console.log('path', program._optionValues.targetPath)
+        process.env.CLI_TARGET_PATH = program._optionValues.targetPath;
+
     })
     // 对未知命令监听
     program.on('command:*', function(obj){
@@ -99,7 +108,6 @@ function checkEnv(){
         });
     }
     createDefaultConfig()
-    log.verbose('环境变量', process.env.CLI_HOME_PATH)
 }
 // 如果没有环境变量。默认配置
 function createDefaultConfig(){
@@ -113,22 +121,7 @@ function createDefaultConfig(){
     }
     process.env.CLI_HOME_PATH = cliConfig.cliHome
 }
-// 检查入惨
-function checkInputArgs(){
-    const minimst = require('minimist')
-    args = minimst(process.argv.slice(2))
-    console.log(args)
-    checArgs()
-}
-// 检查参数
-function checArgs(){
-    if(args.debug){
-        process.env.LOG_LEVEL = 'verbose'
-    }else{
-        process.env.LOG_LEVEL = 'info'
-    }
-    log.level = process.env.LOG_LEVEL; // 后置修改log level
-}
+
 // 检查用户主目录
 function checkUserHome(){
     if(!userHome || !pathExists(userHome)){

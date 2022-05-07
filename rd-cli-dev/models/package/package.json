@@ -27,8 +27,10 @@
     "url": "https://github.com/liangchaofei/rd-cli-dev/issues"
   },
   "dependencies": {
-    "@rd-cli-dev/utils": "file:../../utils/utils",
     "@rd-cli-dev/format-path": "file:../../utils/format-path",
+    "@rd-cli-dev/utils": "file:../../utils/utils",
+    "@rd-cli-dev/get-npm-info": "file:../../utils/get-npm-info",
+    "npminstall": "^6.1.0",
     "pkg-dir": "^6.0.1"
   }
 }

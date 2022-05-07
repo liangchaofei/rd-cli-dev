@@ -1,8 +1,10 @@
 'use strict';
 const path = require('path')
 const pkgDir = require('pkg-dir').sync;
+const npminstall = require('npminstall')
 const { isObject } = require('@rd-cli-dev/utils')
 const formatPath = require('@rd-cli-dev/format-path')
+const { getDefaultRegistry } = require('@rd-cli-dev/get-npm-info')
 class Package{
     constructor(options){
         if(!options){
@@ -11,9 +13,9 @@ class Package{
         if(!isObject(options)){
             throw new Error('Package类的options必须为对象！')
         }
-        const { targetPath, storePath, packageName, packageVersion } = options;
+        const { targetPath, storeDir, packageName, packageVersion } = options;
         this.targetPath = targetPath; // package的目标路径
-        // this.storePath = storePath; // package的缓存存储路径 
+        this.storeDir = storeDir; // package的缓存存储路径 
         this.packageName = packageName; // package的名称
         this.packageVersion = packageVersion; // package的版本
     }
@@ -22,7 +24,17 @@ class Package{
     exists(){}
     // 安装package
     install(){
-
+        return npminstall({
+            root: this.targetPath,
+            storeDir: this.storeDir,
+            registry: getDefaultRegistry(),
+            pkgs:[
+                {
+                    name: this.packageName,
+                    version: this.packageVersion
+                }
+            ]
+        })
     }
     // 更新package
     update(){}

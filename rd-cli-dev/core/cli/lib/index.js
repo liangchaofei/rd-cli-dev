@@ -21,6 +21,9 @@ async function core() {
         registryCommand()
     }catch(e){
         log.error(e.message)
+        if(process.env.LOG_LEVEL === 'verbose'){
+            console.log(e)
+        }
     }
 }
 // 准备阶段

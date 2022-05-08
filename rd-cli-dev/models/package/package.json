@@ -28,9 +28,11 @@
   },
   "dependencies": {
     "@rd-cli-dev/format-path": "file:../../utils/format-path",
-    "@rd-cli-dev/utils": "file:../../utils/utils",
     "@rd-cli-dev/get-npm-info": "file:../../utils/get-npm-info",
+    "@rd-cli-dev/utils": "file:../../utils/utils",
+    "fs-extra": "^10.1.0",
     "npminstall": "^6.1.0",
+    "path-exists": "^5.0.0",
     "pkg-dir": "^6.0.1"
   }
 }

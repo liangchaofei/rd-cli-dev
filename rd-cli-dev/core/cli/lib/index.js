@@ -10,9 +10,8 @@ const pathExists = require('path-exists').sync;
 const commander = require('commander')
 const pkg = require('../package.json')
 const log = require('@rd-cli-dev/log')
-const init = require('@rd-cli-dev/init')
 const exec = require('@rd-cli-dev/exec')
-const { LOWEST_NODE_VERSION, DEFAULT_CLI_HOME } = require('./const')
+const {  DEFAULT_CLI_HOME } = require('./const')
 
 const program = new commander.Command()
 async function core() {
@@ -29,7 +28,6 @@ async function core() {
 // 准备阶段
 async function prepare(){
     checkPkgVersion()
-    checkNodeVersion()
     checkRoot()
     checkUserHome()
     checkEnv()
@@ -137,17 +135,6 @@ function checkRoot(){
     checkRoot()
 }
 
-// 检查node版本
-function checkNodeVersion(){
-    // 1.获取当前node版本
-    const currentVersion = process.version;
-    // 2.获取最低版本
-    const lowestVersion = LOWEST_NODE_VERSION;
-    // 3.比对，使用semver库
-    if(!semver.gte(currentVersion, lowestVersion)){
-        throw new Error(colors.red(`rd-cli 需要安装 v${lowestVersion} 以上版本的 Node.js`))
-    }
-}   
 
 // 检查版本号
 function checkPkgVersion(){

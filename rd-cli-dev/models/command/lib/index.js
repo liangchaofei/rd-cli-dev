@@ -1,8 +1,7 @@
 'use strict';
 const semver = require('semver')
-const colors = require('colors/safe')
+const colors = require('colors/safe');
 const log = require('@rd-cli-dev/log');
-const { isObject } = require('@rd-cli-dev/utils');
 
 const LOWEST_NODE_VERSION = '12.0.0';
 class Command{

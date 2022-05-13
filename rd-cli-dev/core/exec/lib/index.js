@@ -25,7 +25,7 @@ async function exec() {
     const packageName  = SETTINGS[cmdName] // package name
 
     const packageVersion = 'latest';
-
+    console.log('targetPath', targetPath)
     if(!targetPath){
         targetPath = path.resolve(homePath, CACHE_DIR); // 生成缓存路径
         storeDir = path.resolve(targetPath, 'node_modules')
@@ -46,13 +46,16 @@ async function exec() {
            await pkg.install()
         }
     }else{
+        console.log('qqq')
         pkg = new Package({
             targetPath,
             packageName,
             packageVersion 
         });
+        console.log('pppp',pkg)
     }
-    const rootFile = pkg.getRootFilePath();
+    console.log('pkg',pkg)
+    const rootFile = pkg && pkg.getRootFilePath();
     if(rootFile){
         try{
             // 在当前进程中调用

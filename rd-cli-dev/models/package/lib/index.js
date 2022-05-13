@@ -6,9 +6,11 @@ const fse = require('fs-extra')
 const npminstall = require('npminstall')
 const { isObject } = require('@rd-cli-dev/utils')
 const formatPath = require('@rd-cli-dev/format-path')
-const { getDefaultRegistry, getNpmLatestVersion } = require('@rd-cli-dev/get-npm-info')
+const { getDefaultRegistry, getNpmLatestVersion } = require('@rd-cli-dev/get-npm-info');
 class Package{
     constructor(options){
+        console.log('options',options)
+        console.log(isObject(options))
         if(!options){
             throw new Error('Package类的options不能为空！')
         }

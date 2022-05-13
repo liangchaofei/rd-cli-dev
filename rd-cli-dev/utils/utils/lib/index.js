@@ -3,7 +3,7 @@
 
 
 function isObject(o){
-    return Object.prototype.toString.call(0) === '[object Object]'
+    return Object.prototype.toString.call(o) === '[object Object]'
 }
 
 

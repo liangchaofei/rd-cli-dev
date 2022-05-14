@@ -29,9 +29,12 @@
   "dependencies": {
     "@rd-cli-dev/command": "file:../../models/command",
     "@rd-cli-dev/log": "file:../../utils/log",
+    "@rd-cli-dev/utils": "file:../../utils/utils",
+    "@rd-cli-dev/package": "file:../../models/package",
     "@rd-cli-dev/request": "file:../../utils/request",
     "fs-extra": "^10.1.0",
     "inquirer": "^8.2.4",
-    "semver": "^7.3.7"
+    "semver": "^7.3.7",
+    "user-home": "^3.0.0"
   }
 }

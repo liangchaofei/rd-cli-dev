@@ -1,10 +1,14 @@
 'use strict';
 
 const fse = require('fs-extra')
+const path = require('path')
 const inquirer = require('inquirer')
 const semver = require('semver')
+const userHome = require('user-home')
 const Command = require('@rd-cli-dev/command')
+const Package = require('@rd-cli-dev/package')
 const log = require('@rd-cli-dev/log');
+const { spinnerStart, sleep } = require('@rd-cli-dev/utils')
 
 const getProjectTemplate = require('./getProjectTemplate')
 
@@ -26,7 +30,7 @@ class InitCommand extends Command{
             this.projectInfo = projectInfo;
             if(projectInfo){
                 // 2.下载模版
-                this.downloadTemplate()
+                await this.downloadTemplate()
                 // 3.安装模版
             }
             
@@ -35,13 +39,48 @@ class InitCommand extends Command{
         }
     }
 
-    downloadTemplate(){
-        console.log('fff', this.projectInfo, this.template)
+    async downloadTemplate(){
         // 1.通过项目模版api获取项目模版信息
         // 1.1通过egg.js搭建一套后台系统
         // 1.2 通过npm存储模版信息
         // 1.3 将模版信息存储到mongodb数据库
         // 1.4 通过egg.js获取mongodb中的数据并且通过api返回
+        const { projectTemplate } = this.projectInfo;
+        const templateInfo = this.template.find(item => item.npmName === projectTemplate)
+        const targetPath = path.resolve(userHome,'.rd-cli-dev', 'template') // /Users/liangchaofei/.rd-cli-dev/template
+        const storeDir = path.resolve(userHome,'.rd-cli-dev', 'template','node_modules') // /Users/liangchaofei/.rd-cli-dev/template/node_modules
+        const {npmName, version} = templateInfo;
+        const templateNpm = new Package({
+            targetPath,
+            storeDir,
+            packageName: npmName,
+            packageVersion: version
+        })
+        if(! await templateNpm.exists()){
+            const spinner = spinnerStart('正在下载模版...');
+            await sleep();
+            try{
+                await templateNpm.install()
+                log.success('下载模版成功')
+            }catch(e){
+                throw e;
+            } finally{
+                spinner.stop(true)
+            }
+        }else{
+            const spinner = spinnerStart('正在更新模版...');
+            await sleep();
+
+            try{
+                await templateNpm.update()
+                log.success('更新模版成功')
+            }catch(e){
+                throw e;
+            } finally{
+                spinner.stop(true)
+            }
+        }
+        console.log(targetPath,storeDir, npmName, version, templateNpm)
     }
     async prepare(){
         // 0.判断项目模版是否存在
@@ -89,7 +128,7 @@ class InitCommand extends Command{
     async getProjectInfo(){
         let projectInfo = {};
          // 1.选择创建项目或组件
-         const { type } = inquirer.prompt({
+         const {type} = await inquirer.prompt({
              type: 'list',
              name: 'type',
              message: '请选择初始化类型',
@@ -106,6 +145,7 @@ class InitCommand extends Command{
              ]
          })
 
+         console.log('msg', type)
          
          if(type === TYPE_PROJECT){
             // 2.获取项目的基本信息
@@ -155,6 +195,12 @@ class InitCommand extends Command{
                         }
                      
                     }
+                },
+                {
+                    type: 'list',
+                    name: 'projectTemplate',
+                    message: '请选择项目模版',
+                    choices: this.createTemplateChoices()
                 }
             ])
             projectInfo = {
@@ -175,6 +221,13 @@ class InitCommand extends Command{
             !file.startsWith('.') && ['node_modules'].indexOf(file) <0
         })
         return !fileList || fileList.length <= 0
+    }
+
+    createTemplateChoices(){
+        return this.template.map(item => ({
+            value: item.npmName,
+            name: item.name
+        }))
     }
 }
 

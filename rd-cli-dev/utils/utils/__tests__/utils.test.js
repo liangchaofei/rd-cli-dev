@@ -2,6 +2,6 @@
 
 const utils = require('..');
 
-describe('utils', () => {
+describe('@rd-cli-dev/utils', () => {
     it('needs tests');
 });

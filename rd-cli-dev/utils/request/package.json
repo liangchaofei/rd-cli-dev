@@ -1,7 +1,7 @@
 {
-  "name": "@rd-cli-dev/init",
-  "version": "0.0.0",
-  "description": "init command",
+  "name": "@rd-cli-dev/request",
+  "version": "0.0.4",
+  "description": "> TODO: description",
   "author": "liangchaofei <chaofei_liang@126.com>",
   "homepage": "https://github.com/liangchaofei/rd-cli-dev#readme",
   "license": "ISC",
@@ -27,11 +27,6 @@
     "url": "https://github.com/liangchaofei/rd-cli-dev/issues"
   },
   "dependencies": {
-    "@rd-cli-dev/command": "file:../../models/command",
-    "@rd-cli-dev/log": "file:../../utils/log",
-    "@rd-cli-dev/request": "file:../../utils/request",
-    "fs-extra": "^10.1.0",
-    "inquirer": "^8.2.4",
-    "semver": "^7.3.7"
+    "axios": "^0.27.2"
   }
 }

@@ -6,6 +6,7 @@ const semver = require('semver')
 const Command = require('@rd-cli-dev/command')
 const log = require('@rd-cli-dev/log');
 
+const getProjectTemplate = require('./getProjectTemplate')
 
 const TYPE_PROJECT = 'project';
 const TYPE_COMPONENT = 'component'
@@ -22,6 +23,7 @@ class InitCommand extends Command{
         try{
             // 1.准备阶段
             const projectInfo = await this.prepare();
+            this.projectInfo = projectInfo;
             if(projectInfo){
                 // 2.下载模版
                 this.downloadTemplate()
@@ -34,6 +36,7 @@ class InitCommand extends Command{
     }
 
     downloadTemplate(){
+        console.log('fff', this.projectInfo, this.template)
         // 1.通过项目模版api获取项目模版信息
         // 1.1通过egg.js搭建一套后台系统
         // 1.2 通过npm存储模版信息
@@ -41,6 +44,13 @@ class InitCommand extends Command{
         // 1.4 通过egg.js获取mongodb中的数据并且通过api返回
     }
     async prepare(){
+        // 0.判断项目模版是否存在
+        const template = await getProjectTemplate();
+        if(!template || template.length === 0){
+            throw new Error('项目模版不存在!')
+        }
+        this.template = template;
+        console.log('template', template)
         // 1.判断当前目录是否为空
         const localPath = process.cwd() // 获取当前目录
         if(!this.isDirEmpty(localPath)){

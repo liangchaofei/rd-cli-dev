@@ -15,6 +15,9 @@ const getProjectTemplate = require('./getProjectTemplate')
 const TYPE_PROJECT = 'project';
 const TYPE_COMPONENT = 'component'
 
+const TEMPLATE_TYPE_NORMAL = 'normal';
+const TEMPLATE_TYPE_CUSTOM = 'custom';
+
 class InitCommand extends Command{
     init(){
         this.projectName = this._argv[0] || '';
@@ -32,6 +35,7 @@ class InitCommand extends Command{
                 // 2.下载模版
                 await this.downloadTemplate()
                 // 3.安装模版
+                await this.installTemplate()
             }
             
         }catch(e){
@@ -39,6 +43,49 @@ class InitCommand extends Command{
         }
     }
 
+    
+    async installTemplate(){
+        if(this.templateInfo){
+            if(!this.templateInfo.type){
+                this.templateInfo.type = TEMPLATE_TYPE_NORMAL;
+            }
+            if(this.templateInfo.type === TEMPLATE_TYPE_NORMAL){
+                // 标准安装
+                await this.installNormalTemplate()
+            }else if(this.templateInfo.type === TEMPLATE_TYPE_CUSTOM){
+                // 自定义安装
+                await this.installCustomTemplate()
+            }else{
+                throw new Error('无法识别项目模版类型!')
+            }
+        }else{
+            throw new Error('项目模版信息不存在!')
+        }
+    }
+
+    // 标准安装
+    async installNormalTemplate(){
+        console.log('安装标准模版')
+        // 拷贝模版代码到当前目录
+        let spinner = spinnerStart('正在安装模版...')
+        await sleep()
+        try{
+            const templatePath = path.resolve(this.templateNpm.cacheFilePath, 'template') // 项目模版代码缓存目录
+            const targetPath = process.cwd(); // 当前目录
+            fse.ensureDirSync(templatePath) // 确保目录存在
+            fse.ensureDirSync(targetPath)
+            fse.copySync(templatePath, targetPath) // 拷贝
+        }catch(e){
+            throw e;
+        } finally {
+            spinner.stop(true)
+            log.success('模版安装成功')
+        }
+    }
+    // 自定义安装
+    async installCustomTemplate(){
+        console.log('安装自定义模版')
+    }
     async downloadTemplate(){
         // 1.通过项目模版api获取项目模版信息
         // 1.1通过egg.js搭建一套后台系统
@@ -47,6 +94,7 @@ class InitCommand extends Command{
         // 1.4 通过egg.js获取mongodb中的数据并且通过api返回
         const { projectTemplate } = this.projectInfo;
         const templateInfo = this.template.find(item => item.npmName === projectTemplate)
+        this.templateInfo = templateInfo;
         const targetPath = path.resolve(userHome,'.rd-cli-dev', 'template') // /Users/liangchaofei/.rd-cli-dev/template
         const storeDir = path.resolve(userHome,'.rd-cli-dev', 'template','node_modules') // /Users/liangchaofei/.rd-cli-dev/template/node_modules
         const {npmName, version} = templateInfo;
@@ -61,11 +109,15 @@ class InitCommand extends Command{
             await sleep();
             try{
                 await templateNpm.install()
-                log.success('下载模版成功')
+               
             }catch(e){
                 throw e;
             } finally{
                 spinner.stop(true)
+                if(await templateNpm.exists()){
+                    log.success('下载模版成功')
+                    this.templateNpm = templateNpm;
+                }
             }
         }else{
             const spinner = spinnerStart('正在更新模版...');
@@ -73,11 +125,14 @@ class InitCommand extends Command{
 
             try{
                 await templateNpm.update()
-                log.success('更新模版成功')
             }catch(e){
                 throw e;
             } finally{
                 spinner.stop(true)
+                if(await templateNpm.exists()){
+                    log.success('更新模版成功')
+                    this.templateNpm = templateNpm;
+                }
             }
         }
         console.log(targetPath,storeDir, npmName, version, templateNpm)
@@ -89,39 +144,38 @@ class InitCommand extends Command{
             throw new Error('项目模版不存在!')
         }
         this.template = template;
-        console.log('template', template)
         // 1.判断当前目录是否为空
         const localPath = process.cwd() // 获取当前目录
-        if(!this.isDirEmpty(localPath)){
-            let ifContintue = false;
-            if(!this.force){
-                // 询问是否继续创建
-                ifContintue = (await inquirer.prompt({
-                    type: 'confirm',
-                    name: 'ifContintue',
-                    default: false,
-                    message: '当前文件夹不为空，是否继续创建项目？'
-                })).ifContintue;
-
-                if(!ifContintue){
-                    return;
-                }
+        log.verbose('aaa', !this.isDirEmpty(localPath))
+        if (!this.isDirEmpty(localPath)) {
+            let ifContinue = false;
+            if (!this.force) {
+              // 询问是否继续创建
+              ifContinue = (await inquirer.prompt({
+                type: 'confirm',
+                name: 'ifContinue',
+                default: false,
+                message: '当前文件夹不为空，是否继续创建项目？',
+              })).ifContinue;
+              if (!ifContinue) {
+                return;
+              }
             }
-             // 2.是否启动强制更新
-            if(ifContintue || this.force){
-                // 给用户做二次确认
-                const { confirmDelete} = inquirer.prompt({
-                    type: 'confirm',
-                    name: 'confirmDelete',
-                    default: false,
-                    message: '是否确认清空当前目录下的文件?'
-                })
-                if(confirmDelete){
-                    // 清空当前目录
-                    fse.emptyDirSync(localPath)
-                }
+            // 2. 是否启动强制更新
+            if (ifContinue || this.force) {
+              // 给用户做二次确认
+              const { confirmDelete } = await inquirer.prompt({
+                type: 'confirm',
+                name: 'confirmDelete',
+                default: false,
+                message: '是否确认清空当前目录下的文件？',
+              });
+              if (confirmDelete) {
+                // 清空当前目录
+                fse.emptyDirSync(localPath);
+              }
             }
-        }
+          }
         return this.getProjectInfo();
     }
 
@@ -213,15 +267,14 @@ class InitCommand extends Command{
          return projectInfo;
     }
 
-    isDirEmpty(localPath){
-       
+    isDirEmpty(localPath) {
         let fileList = fs.readdirSync(localPath);
-        // 文件过滤
-        fileList = fileList.filter(file => {
-            !file.startsWith('.') && ['node_modules'].indexOf(file) <0
-        })
-        return !fileList || fileList.length <= 0
-    }
+        // 文件过滤的逻辑
+        fileList = fileList.filter(file => (
+          !file.startsWith('.') && ['node_modules'].indexOf(file) < 0
+        ));
+        return !fileList || fileList.length <= 0;
+      }
 
     createTemplateChoices(){
         return this.template.map(item => ({

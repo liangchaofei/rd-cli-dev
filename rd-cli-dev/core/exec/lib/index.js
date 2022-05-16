@@ -1,8 +1,8 @@
 'use strict';
-const cp = require('child_process')
 const path = require('path')
 const log = require('@rd-cli-dev/log');
 const Package = require('@rd-cli-dev/package')
+const { exec: spawn } = require('@rd-cli-dev/utils')
 
 
 
@@ -89,10 +89,4 @@ async function exec() {
     }
 }
 
-function spawn(command, args,options){
-    const win32 = process.platform === 'win32';
-    const cmd = win32 ? 'cmd': command;
-    const cmdArgs = win32 ?['/c'].concat(command,args):args;
-    return cp.spawn(cmd,cmdArgs,options || {})
-}
 module.exports = exec;

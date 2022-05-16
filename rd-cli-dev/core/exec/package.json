@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@rd-cli-dev/package": "file:../../models/package",
-    "@rd-cli-dev/log": "file:../../utils/log"
+    "@rd-cli-dev/log": "file:../../utils/log",
+    "@rd-cli-dev/utils": "file:../../utils/utils"
   }
 }

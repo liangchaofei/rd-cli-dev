@@ -29,11 +29,14 @@
   "dependencies": {
     "@rd-cli-dev/command": "file:../../models/command",
     "@rd-cli-dev/log": "file:../../utils/log",
-    "@rd-cli-dev/utils": "file:../../utils/utils",
     "@rd-cli-dev/package": "file:../../models/package",
     "@rd-cli-dev/request": "file:../../utils/request",
+    "@rd-cli-dev/utils": "file:../../utils/utils",
+    "ejs": "^3.1.8",
     "fs-extra": "^10.1.0",
+    "glob": "^8.0.3",
     "inquirer": "^8.2.4",
+    "kebab-case": "^1.0.1",
     "semver": "^7.3.7",
     "user-home": "^3.0.0"
   }

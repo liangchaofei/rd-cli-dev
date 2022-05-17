@@ -8,7 +8,8 @@ const { exec: spawn } = require('@rd-cli-dev/utils')
 
 
 const SETTINGS = {
-    init: '@rd-cli-dev/init'
+    init: '@rd-cli-dev/init',
+    publish: '@rd-cli-dev/publish'
 }
 
 const CACHE_DIR = 'dependencies'

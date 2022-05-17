@@ -164,9 +164,28 @@ class InitCommand extends Command{
         await this.execCommand(startCommand, '启动执行命令失败!')
     }
     // 自定义安装
-    async installCustomTemplate(){
-        console.log('安装自定义模版')
-    }
+    async installCustomTemplate() {
+        // 查询自定义模板的入口文件
+        if (await this.templateNpm.exists()) {
+          const rootFile = this.templateNpm.getRootFilePath();
+          if (fs.existsSync(rootFile)) {
+            log.notice('开始执行自定义模板');
+            const templatePath = path.resolve(this.templateNpm.cacheFilePath, 'template');
+            const options = {
+              templateInfo: this.templateInfo,
+              projectInfo: this.projectInfo,
+              sourcePath: templatePath,
+              targetPath: process.cwd(),
+            };
+            const code = `require('${rootFile}')(${JSON.stringify(options)})`;
+            log.verbose('code', code);
+            await execAsync('node', ['-e', code], { stdio: 'inherit', cwd: process.cwd() });
+            log.success('自定义模板安装成功');
+          } else {
+            throw new Error('自定义模板入口文件不存在！');
+          }
+        }
+      }
     async downloadTemplate(){
         // 1.通过项目模版api获取项目模版信息
         // 1.1通过egg.js搭建一套后台系统

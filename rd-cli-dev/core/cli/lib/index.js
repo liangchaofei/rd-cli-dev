@@ -49,6 +49,10 @@ function registryCommand(){
         .option('-f, --force', '是否强制初始化项目')
         .action(exec)
 
+    // publish命令
+    program
+        .command('publish')
+        .action(exec)
 
         
     // 开启debug模式

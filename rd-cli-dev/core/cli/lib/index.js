@@ -52,6 +52,8 @@ function registryCommand(){
     // publish命令
     program
         .command('publish')
+        .option('--refreshServer', '强制更新远程git仓库')
+        .option('--refreshToken', '强制更新远程仓库token')
         .action(exec)
 
         

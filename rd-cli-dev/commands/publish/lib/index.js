@@ -3,11 +3,16 @@ const path = require('path')
 const fs = require('fs')
 const fse = require('fs-extra')
 const Command = require('@rd-cli-dev/command')
+const Git = require('@rd-cli-dev/git')
 const log = require('@rd-cli-dev/log')
 class PublishCommand extends Command{
     init(){
         // 处理参数
-        console.log('init', this._argv)
+        console.log('publish', this._argv)
+        this.options = {
+            refreshServer: this._cmd.refreshServer,
+            refreshToken: this._cmd.refreshToken,
+        }
     }
 
     async exec(){
@@ -16,6 +21,8 @@ class PublishCommand extends Command{
         // 1.初始化检查
         this.prepare()
         // 2.git flow自动化
+        const git = new Git(this.projectInfo, this.options)
+        await git.prepare();
         // 3.云构建和云发布
         const endTime = new Date().getTime();
         log.info('本次发布耗时：'+ Math.floor((endTime-startTime)/1000) + '秒')

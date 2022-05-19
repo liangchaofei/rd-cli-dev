@@ -1,13 +1,22 @@
 const axios = require('axios');
-const BASE_URL = 'https://gitee.com/api/v5';
+const BASE_URL = 'https://api.github.com';
 
-class GiteeRequest {
+class GithubRequest {
   constructor(token) {
     this.token = token;
     this.service = axios.create({
       baseURL: BASE_URL,
       timeout: 5000,
     });
+    this.service.interceptors.request.use(
+        config=>{
+            config.headers['Authorization'] = `token ${this.token}`;
+            return config;
+        },
+        error => {
+            Promise.reject(error)
+        }
+    )
     this.service.interceptors.response.use(
       response => {
         return response.data;
@@ -25,10 +34,7 @@ class GiteeRequest {
   get(url, params, headers) {
     return this.service({
       url,
-      params: {
-        ...params,
-        access_token: this.token,
-      },
+      params,
       method: 'get',
       headers,
     });
@@ -47,4 +53,4 @@ class GiteeRequest {
   }
 }
 
-module.exports = GiteeRequest;
+module.exports = GithubRequest;

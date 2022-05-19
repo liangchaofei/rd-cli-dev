@@ -6,7 +6,7 @@ class Gitee extends GitServer{
         super('gitee')
         this.request = null;
     }
-    getSSHKeysUrl(){
+    getTokenUrl(){
         return 'https://gitee.com/profile/sshkeys'
     }
     getTokenHelpUrl(){

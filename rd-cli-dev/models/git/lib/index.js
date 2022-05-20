@@ -8,7 +8,7 @@ const userHome = require('user-home')
 const terminalLink = require('terminal-link')
 const SimpleGit = require('simple-git')
 const log = require('@rd-cli-dev/log')
-const { readFile, writeFile } = require('@rd-cli-dev/utils');
+const { readFile, writeFile, spinnerStart } = require('@rd-cli-dev/utils');
 const Github = require('./Github');
 const Gitee = require('./Gitee');
 
@@ -66,6 +66,7 @@ class Git{
         this.orgs = null; // 用户所属组织列表
         this.owner = null; // 远程仓库类型
         this.login = null; // 远程仓库登录名
+        this.repo = null; // 远程仓库信息
         this.refreshServer = refreshServer; // 是否强制更新远程仓库类型
         this.refreshToken = refreshToken;  // 是否强制更新远程仓库token
         this.refreshOwner = refreshOwner;  // 是否强制更新远程仓库类型
@@ -77,6 +78,7 @@ class Git{
        await this.checkGitToken() // 检查获取远程仓库token
        await this.getUserAndOrgs() // 获取远程仓库用户和组织信息
        await this.checkGitOwner() // 确认远程仓库类型：user/orgs
+       await this.checkRepo() // 检查并创建远程仓库
     }
 
     checkHomePath(){
@@ -210,6 +212,37 @@ class Git{
         }
         this.owner = owner;
         this.login = login;
+    }
+
+    async checkRepo(){
+        let repo = await this.gitServer.getRepo(this.login, this.name);
+        console.log('repo', repo)
+        if(!repo){
+            let spinner = spinnerStart('开始创建远程仓库...')
+            try{
+                // 个人
+                if(this.owner === REPO_OWNER_USER){
+                    repo = await this.gitServer.createRepo(this.name)
+                }else{
+                    // 组织
+                    this,this.gitServer.createOrgRepo(this.name, this.login)
+                }
+            }catch(e){
+                log.error(e)
+            }finally{
+                spinner.stop(true)
+            }
+
+            if(repo){
+                log.success('远程仓库创建成功')
+            }else{
+                throw new Error('远程仓库创建失败')
+            }
+        }else{
+            log.success('远程仓库信息获取成功')
+        }
+        log.verbose('repo', repo)
+        this.repo = repo;
     }
     init(){
         console.log('init')

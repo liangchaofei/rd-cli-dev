@@ -29,6 +29,32 @@ class Github extends GitServer{
             per_page: 100
         })
     }
+
+    getRepo(login, name) {
+        return this.request
+          .get(`/repos/${login}/${name}`)
+          .then(response => {
+            return this.handleResponse(response);
+          });
+      }
+    
+      createRepo(name) {
+        return this.request.post('/user/repos', {
+          name,
+        },{
+            Accept: 'application/vnd.github.v3+json'
+        });
+      }
+      createOrgRepo(name,login) {
+        return this.request.post(`/orgs/${login}/repos`, {
+          name,
+        },{
+            Accept: 'application/vnd.github.v3+json'
+        });
+      }
+      getRemote(login,name){
+        return `git@github.com:${login}/${name}.git`
+    }
 }
 
 module.exports = Github;

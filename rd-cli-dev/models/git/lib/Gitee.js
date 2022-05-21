@@ -28,19 +28,28 @@ class Gitee extends GitServer{
         })
     }
 
-    getRepo(login, name){
+    getRepo(login, name) {
         return this.request
-            .get(`https://gitee.com/api/v5/repos/${login}/${name}`)
-            .then(res => {
-                return this.handleResponse(res)
-            })
-    }
-    createRepo(name){
-        return this.request.post('/user/repos',{
-            name
-        })
-    }
-    createOrgRepo(name,login){}
+          .get(`/repos/${login}/${name}`)
+          .then(response => {
+            return this.handleResponse(response);
+          });
+      }
+    
+      createRepo(name) {
+        return this.request.post('/user/repos', {
+          name,
+        });
+      }
+      createOrgRepo(name,login) {
+        return this.request.post(`/orgs/${login}/repos`, {
+          name,
+        });
+      }
+
+      getRemote(login,name){
+          return `git@gitee.com:${login}/${name}.git`
+      }
 }
 
 module.exports = Gitee;

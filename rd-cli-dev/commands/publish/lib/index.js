@@ -13,6 +13,7 @@ class PublishCommand extends Command{
             refreshServer: this._cmd.refreshServer,
             refreshToken: this._cmd.refreshToken,
             refreshOwner: this._cmd.refreshOwner,
+            buildCmd: this._argv[0].buildCmd
         }
     }
 
@@ -23,7 +24,9 @@ class PublishCommand extends Command{
         this.prepare()
         // 2.git flow自动化
         const git = new Git(this.projectInfo, this.options)
-        await git.prepare();
+        await git.prepare(); // 自动化提交准备和代码仓库初始化
+        await git.commit() // 代码自动化提交
+        await git.publish() // 代码云构建+云发布
         // 3.云构建和云发布
         const endTime = new Date().getTime();
         log.info('本次发布耗时：'+ Math.floor((endTime-startTime)/1000) + '秒')

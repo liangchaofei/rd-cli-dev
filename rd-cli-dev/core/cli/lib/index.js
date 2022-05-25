@@ -55,6 +55,7 @@ function registryCommand(){
         .option('--refreshServer', '强制更新远程git仓库')
         .option('--refreshToken', '强制更新远程仓库token')
         .option('--refreshOwner', '强制更新远程仓库类型')
+        .option('--buildCmd <buildCmd>', '构建命令')
         .action(exec)
 
         

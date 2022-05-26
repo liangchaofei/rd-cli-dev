@@ -9,7 +9,7 @@ const WS_SERVER = 'http://127.0.0.1:7001';
 const TIME_OUT = 5 * 60 * 1000;
 const CONNECT_TIME_OUT = 5 * 1000;
 
-const FAILED_CODE = ['prepare failed']
+const FAILED_CODE = ['prepare failed', 'download failed', 'install failed', 'build failed']
 function parseMsg(msg){
     const action = _.get(msg, 'data.action')
     const message = _.get(msg, 'data.payload.message')
@@ -96,7 +96,7 @@ class CloudBuild{
 
             })
             this.socket.on('building', msg => {
-                
+                console.log('msg',msg)
             })
         })
     }

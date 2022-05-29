@@ -24,6 +24,7 @@ const GIT_ROOT_DIR = '.git';
 const GIT_OWN_FILE = '.git_own';
 const GIT_LOGIN_FILE = '.git_login';
 const GIT_IGNORE_FILE = '.gitignore';
+const GIT_PUBLISH_FILE = '.git_publish';
 const REPO_OWNER_USER = 'user';
 const REPO_OWNER_ORG = 'org';
 
@@ -56,12 +57,20 @@ const GIT_OWNER_TYPE_ONLY = [
         value: REPO_OWNER_USER
     },
 ]
+
+const GIT_PUBLISH_TYPE = [
+    {
+        nane: 'OSS',
+        value: 'oss'
+    }
+]
 class Git{
     constructor({name,version, dir},{ 
         refreshServer = false,
         refreshToken = false,
         refreshOwner = false,
-        buildCmd = ''
+        buildCmd = '',
+        prod = false
     }){
         this.name = name; // 项目名称
         this.version = version; // 项目版本
@@ -79,6 +88,8 @@ class Git{
         this.refreshOwner = refreshOwner;  // 是否强制更新远程仓库类型
         this.branch = null; // 本地开发分支
         this.buildCmd = buildCmd; // 构建命令
+        this.gitPublish = null; // 静态资源服务器类型
+        this.prod = prod; // 是否正式发布
     }
 
     async prepare(){
@@ -297,18 +308,22 @@ pnpm-debug.log*
     }
 
     async publish(){
-        console.log('tttttt')
-        console.log('this.buildCmd', this.buildCmd)
         await this.preparePublish()
-
+        console.log('aa', this.gitPublish)
         const cloudBuild = new CloudBuild(this,{
-            buildCmd: this.buildCmd       
+            buildCmd: this.buildCmd,
+            type: this.gitPublish,
+            prod: this.prod     
         })
+        await cloudBuild.prepare()
         await cloudBuild.init();
         await cloudBuild.build();
     }
 
     async preparePublish(){
+        log.info('开始进行云构建前代码检查');
+        const pkg =  this.getPackageJson();
+
         if(this.buildCmd){
          console.log('this.buildCmd', this.buildCmd)
           const buildCmdArray =   this.buildCmd.split(' ');
@@ -318,6 +333,36 @@ pnpm-debug.log*
         }else{
             this.buildCmd = 'npm run build'
         }
+        const buildCmdArray =   this.buildCmd.split(' ');
+        const lastCmd = buildCmdArray[buildCmdArray.length - 1];
+
+        if(!pkg.scripts || !Object.keys(pkg.scripts).includes(lastCmd)){
+            throw new Error(this.buildCmd + '命令不存在')
+        }
+        log.success('代码预检查通过')
+        const gitPublihPath = this.createPath(GIT_PUBLISH_FILE); // /Users/liangchaofei/.rd-cli-env/.git/.git_server
+        let gitPublish = readFile(gitPublihPath)
+        if(!gitPublish){
+            gitPublish = (await inquirer.prompt({
+                type: 'list',
+                choices: GIT_PUBLISH_TYPE,
+                name: 'gitPublish',
+                message:'请选择您想要上传代码的平台'
+            })).gitPublish;
+            writeFile(gitPublihPath, gitPublish);
+            log.success('git publish类型写入成功', `${gitPublish} -> ${gitPublihPath}`)
+        }else{
+            log.success('git publish类型读取成功', gitPublish)
+        }
+        this.gitPublish = gitPublish;
+    }
+
+     getPackageJson(){
+        const pkgPath = path.resolve(this.dir,'package.json');
+        if(!fs.existsSync(pkgPath)){
+            throw new Error(`package.json 不存在, 源码目录：${this.dir}`)
+        }
+        return fse.readJSONSync(pkgPath)
     }
     async pullRemoteMasterAndBranch(){
         log.info(`合并 [master] -> [${this.branch}]`)

@@ -9,7 +9,7 @@ const WS_SERVER = 'http://127.0.0.1:7001';
 const TIME_OUT = 5 * 60 * 1000;
 const CONNECT_TIME_OUT = 5 * 1000;
 
-const FAILED_CODE = ['prepare failed', 'download failed', 'install failed', 'build failed']
+const FAILED_CODE = ['prepare failed', 'download failed', 'install failed', 'build failed', 'pre-publish failed', 'publish failed']
 function parseMsg(msg){
     const action = _.get(msg, 'data.action')
     const message = _.get(msg, 'data.payload.message')
@@ -25,12 +25,18 @@ class CloudBuild{
         this.git = git;
         this.buildCmd = options.buildCmd;
         this.timeout = TIME_OUT;
+        this.prod = options.prod;
     }
 
     doTimeout(fn, timeout){
         this.timer && clearTimeout(this.timer)
         log.info('设置任务超时时间：', `${timeout/1000}秒`)
         this.timer = setTimeout(fn, timeout)
+    }
+    prepare(){
+        // 1.获取oss文件
+        // 2.判断当前项目oss文件是否存在
+        // 3.如果存在且处于正式发布，则询问是否进行覆盖安装
     }
     init(){
         return new Promise((resolve, reject) => {
@@ -40,7 +46,8 @@ class CloudBuild{
                     name: this.git.name,
                     branch: this.git.branch,
                     version: this.git.version,
-                    buildCmd: this.buildCmd
+                    buildCmd: this.buildCmd,
+                    prod: this.prod
                 }
             })
             socket.on('connect',() => {

@@ -9,11 +9,14 @@ class PublishCommand extends Command{
     init(){
         // 处理参数
         console.log('publish', this._argv)
+        console.log('cmd',this._cmd)
+        console.log('prod', this._argv[0].prod)
         this.options = {
             refreshServer: this._cmd.refreshServer,
             refreshToken: this._cmd.refreshToken,
             refreshOwner: this._cmd.refreshOwner,
-            buildCmd: this._argv[0].buildCmd
+            buildCmd: this._cmd.buildCmd,
+            prod: this._argv[0].prod,
         }
     }
 

@@ -299,11 +299,13 @@ pnpm-debug.log*
         await this.checkStash()
         // 3.检查代码冲突
         await this.checkConflicted()
-        // 4.切换开发分支
+        // 4.检查未提交代码
+        await this.checkNotCommitted()
+        // 5.切换开发分支
         await this.checkoutBranch(this.branch)
-        // 5.合并远程master和开发分支代码
+        // 6.合并远程master和开发分支代码
         await this.pullRemoteMasterAndBranch()
-        // 6.将开发分支推送到远程仓库
+        // 7.将开发分支推送到远程仓库
         await this.pushRemoteRepo(this.branch);
     }
 

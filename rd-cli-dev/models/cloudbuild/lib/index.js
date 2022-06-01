@@ -2,7 +2,9 @@
 
 const io = require('socket.io-client');
 const log = require('@rd-cli-dev/log');
+const request = require('@rd-cli-dev/request')
 const _ = require('lodash')
+const inquirer = require('inquirer')
 
 const WS_SERVER = 'http://127.0.0.1:7001';
 
@@ -33,10 +35,44 @@ class CloudBuild{
         log.info('设置任务超时时间：', `${timeout/1000}秒`)
         this.timer = setTimeout(fn, timeout)
     }
-    prepare(){
-        // 1.获取oss文件
-        // 2.判断当前项目oss文件是否存在
-        // 3.如果存在且处于正式发布，则询问是否进行覆盖安装
+    async prepare(){
+        // 是否正式发布
+        if(this.prod){
+            // 1.获取oss文件
+            const projectName= this.git.name;
+            const projectType = this.prod ? 'prod': 'dev'
+            const ossProject = await request({
+                url: '/project/oss',
+                params : {
+                    name: projectName,
+                    type: projectType
+                }
+            })
+            if(ossProject.code === 0 && ossProject.data.length > 0){
+                const cover = (await inquirer.prompt({
+                    type: 'list',
+                    name: 'cover',
+                    choices: [
+                        {
+                            name: '覆盖发布',
+                            value: true
+                        },
+                        {
+                            name: '放弃发布',
+                            value: false
+                        }
+                    ],
+                    defaultValue: true,
+                    message: `oss已存在 [${projectName}] 项目，是否强行覆盖发布`
+                })).cover;
+                if(!cover){
+                    throw new Error('发布终止')
+                }
+            }
+            // 2.判断当前项目oss文件是否存在
+            // 3.如果存在且处于正式发布，则询问是否进行覆盖安装
+        }
+        
     }
     init(){
         return new Promise((resolve, reject) => {

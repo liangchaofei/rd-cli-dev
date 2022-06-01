@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@rd-cli-dev/log": "file:../../utils/log",
+    "@rd-cli-dev/request": "file:../../utils/request",
     "lodash": "^4.17.21",
     "socket.io-client": "^2.0.0"
   }

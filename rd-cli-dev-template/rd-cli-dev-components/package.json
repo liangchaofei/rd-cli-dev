@@ -1,0 +1,11 @@
+{
+  "name": "rd-cli-dev-components",
+  "version": "1.0.2",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  }
+}

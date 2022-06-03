@@ -1,0 +1,18 @@
+{
+  "name": "rd-cli-dev-template-custom-vue3",
+  "version": "1.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ejs": "^3.1.8",
+    "fs-extra": "^10.1.0",
+    "glob": "^8.0.3",
+    "inquirer": "^8.2.4"
+  }
+}

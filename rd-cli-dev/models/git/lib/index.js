@@ -13,6 +13,7 @@ const { readFile, writeFile, spinnerStart } = require('@rd-cli-dev/utils');
 const Github = require('./Github');
 const Gitee = require('./Gitee');
 const CloudBuild = require('@rd-cli-dev/cloudbuild')
+const request = require('@rd-cli-dev/request')
 
 const GITHUB = 'github';
 const GITEE = 'gitee';
@@ -30,6 +31,8 @@ const REPO_OWNER_ORG = 'org';
 
 const VERSION_RELEASE = 'release';
 const VERSION_DEVELOP = 'dev';
+
+const TEMPLATE_TEMP_DIR = 'oss'
 const GIT_SERVER_TYPE = [
     {
         name: 'Github',
@@ -70,7 +73,10 @@ class Git{
         refreshToken = false,
         refreshOwner = false,
         buildCmd = '',
-        prod = false
+        prod = false,
+        sshUser = '',
+        sshIp = '',
+        sshPath = ''
     }){
         this.name = name; // 项目名称
         this.version = version; // 项目版本
@@ -90,6 +96,9 @@ class Git{
         this.buildCmd = buildCmd; // 构建命令
         this.gitPublish = null; // 静态资源服务器类型
         this.prod = prod; // 是否正式发布
+        this.sshIp = sshIp;
+        this.sshPath = sshPath;
+        this.sshUser = sshUser;
     }
 
     async prepare(){
@@ -319,7 +328,96 @@ pnpm-debug.log*
         })
         await cloudBuild.prepare()
         await cloudBuild.init();
-        await cloudBuild.build();
+        const ret = await cloudBuild.build();
+        if(ret){
+            await this.uploadTemplate()
+        }
+        if(this.prod && ret){
+            // 打tag
+            await this.checkTag()
+            await this.checkoutBranch('master') // 切换分支到master
+            await this.mergeBranchToMaster() // 将开发分支合并到master
+            await this.pushRemoteRepo('master') // 将代码推送到远程分支
+            await this.deleteLocalBranch() // 删除本地开发分支
+            await this.deleteRemoteBranch() // 删除远程开发分支
+        }
+    }
+
+    async deleteLocalBranch(){
+        log.info('开始删除本地开发分支', this.branch)
+        await this.git.deleteLocalBranch(this.branch)
+        log.success('删除本地开发分支成功', this.branch)
+    }
+
+    async deleteRemoteBranch(){
+        log.info('开始删除远程开发分支', this.branch)
+        await this.git.push(['origin','--delete',this.branch])
+        log.success('删除本地远程分支成功', this.branch)
+    }
+    async mergeBranchToMaster(){
+        log.info('开始合并代码',`[${this.branch}] -> [master]`)
+        await this.git.mergeFromTo(this.branch,'master')
+        log.success('合并代码成功',`[${this.branch}] -> [master]`)
+    }
+
+    async checkTag(){
+        log.info('获取远程tag列表')
+        const tag = `${VERSION_RELEASE}/${this.version}`;
+        const tagList = await this.getRemoteBranchList(VERSION_RELEASE)
+        if(tagList.includes(this.version)){
+            log.success('远程 tag 已存在', tag)
+            await this.git.push(['origin',`:refs/tags/${tag}`])
+            log.success('远程tag已删除', tag)
+        }
+        const localTagList = await this.git.tags(); // 本地tag
+        if(localTagList.all.includes(tag)){
+            log.success('本地 tag 已存在', tag)
+            await this.git.tag(['-d', tag])
+            log.success('本地 tag 已删除', tag)
+        }
+        await this.git.addTag(tag) // 添加本地tag
+        log.success('本地 tag 创建成功', tag)
+        await this.git.pushTags('origin') // 推送tag到远程
+        log.success("远程 tag 推送成功")
+    }
+
+    // 模版上传
+    async uploadTemplate(){
+        const TEMPLATE_FILE_NAME = 'index.html'
+        if(this.sshIp && this.sshPath && this.sshUser){
+            log.info('开始下载模版文件')
+            let ossTemplateFile = await request({
+                url:'/oss/get',
+                params: {
+                    name: this.name,
+                    type: this.prod ? 'prod': 'dev',
+                    file: TEMPLATE_FILE_NAME
+                }
+            })
+            if(ossTemplateFile.code === 0 && ossTemplateFile.data){
+                ossTemplateFile =ossTemplateFile.data;
+            }
+            let res = await request({
+                url: ossTemplateFile.url,
+            })
+            if(res){
+                const ossTempDir = path.resolve(this.homePath, TEMPLATE_TEMP_DIR, `${this.name}@${this.version}`)
+                if(!fs.existsSync(ossTempDir)){
+                    fse.mkdirpSync(ossTempDir)
+                }else{
+                    fse.emptyDirSync(ossTempDir)
+                }
+                const templateFilePath = path.resolve(ossTempDir,TEMPLATE_FILE_NAME)
+                fse.createFileSync(templateFilePath)
+                fs.writeFileSync(templateFilePath,res);
+                log.success('模版文件下载成功', templateFilePath)
+                log.info('开始上传模版文件至服务器')
+                const uploadCmd = `scp -r ${templateFilePath} ${this.sshUser}@${this.sshIp}:${this.sshPath}`;
+                const ret = require('child_process').execSync(uploadCmd)
+                log.success('模版文件上传到服务器成功')
+                fse.emptyDirSync(ossTempDir)
+            }
+        }
     }
 
     async preparePublish(){

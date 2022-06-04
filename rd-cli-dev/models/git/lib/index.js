@@ -14,6 +14,7 @@ const Github = require('./Github');
 const Gitee = require('./Gitee');
 const CloudBuild = require('@rd-cli-dev/cloudbuild')
 const request = require('@rd-cli-dev/request')
+const ComponentRequest = require('./ComponentRequest')
 
 const GITHUB = 'github';
 const GITEE = 'gitee';
@@ -359,7 +360,7 @@ pnpm-debug.log*
         let ret = false;
         if(this.isComponent()){
             log.info('开始发布组件')
-            await this.saveComponentToDB();
+            ret =   await this.saveComponentToDB();
 
         }else{
             await this.preparePublish()
@@ -390,10 +391,46 @@ pnpm-debug.log*
 
     async uploadComponentToNpm(){
         // 完成组件上传npm
+        if(this.isComponent()){
+            log.info('开始发布npm')
+            require('child_process').execSync('npm publish',{
+                cwd: this.dir
+            })
+            log.success('npm发布成功')
+        }
     }
     async saveComponentToDB(){
         // 1.将组件信息上传到数据库
+        log.info('上传组件信息到oss并写入数据库')
+        const componentFile = this.isComponent();
+        let componentExamplePath = path.resolve(this.dir,componentFile.examplePath)
+        let dirs = fs.readdirSync(componentExamplePath)
+        if(dirs.includes('dist')){
+            componentExamplePath = path.resolve(componentExamplePath,'dist')
+            dirs = fs.readdirSync(componentExamplePath)
+            componentFile.examplePath = `${componentFile.examplePath}/dist`
+        }
+        dirs = dirs.filter(dir => dir.match(/^index(\d)*.html$/))
+        componentFile.exampleList = dirs;
+        componentFile.exampleRealPath = componentExamplePath;
+        const data = await ComponentRequest.createComponent({
+            component: componentFile,
+            git: {
+                type: this.gitServer.type,
+                remote: this.remote,
+                version: this.version,
+                branch: this.branch,
+                login: this.login,
+                owner: this.owner,
+                repo: this.repo
+            }
+        })
+        if(!data){
+            throw new Error('上传组件失败')
+        }
+
         // 2.将组件多预览页面上传到oss
+        return true;
     }
 
     async deleteLocalBranch(){

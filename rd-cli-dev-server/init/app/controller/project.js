@@ -76,6 +76,11 @@ class ProjectController extends Controller {
       ctx.body = '请在url参数中提供key';
     }
   }
+
+  async test() {
+    const data = await this.ctx.service.project.test();
+    this.ctx.body = data;
+  }
 }
 
 module.exports = ProjectController;

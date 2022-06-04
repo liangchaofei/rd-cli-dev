@@ -10,7 +10,6 @@ const { SUCCESS, FAILED } = require('../const');
 const config = require('../../config/db');
 const OSS = require('../models/OSS');
 
-const helper = require('../../extend/helper');
 
 const REDIS_PREFIX = 'cloudbuild';
 
@@ -195,7 +194,7 @@ function exec(command, args, options) {
 }
 
 async function createCloudBuildTask(ctx, app) {
-  const { socket } = ctx;
+  const { socket, helper } = ctx;
   const client = socket.id;
   const redisKey = `${REDIS_PREFIX}:${client}`;
   const redisTask = await app.redis.get(redisKey);

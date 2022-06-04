@@ -33,6 +33,7 @@ const VERSION_RELEASE = 'release';
 const VERSION_DEVELOP = 'dev';
 
 const TEMPLATE_TEMP_DIR = 'oss'
+const COMPONENT_FILE = '.componentrc'
 const GIT_SERVER_TYPE = [
     {
         name: 'Github',
@@ -78,7 +79,14 @@ class Git{
         sshIp = '',
         sshPath = ''
     }){
-        this.name = name; // 项目名称
+        if(name.startsWidth('@') && name.indexOf('/') > 0){
+            // @rd-cli-dev/component-test => rd-cli-dev_component-test
+            const nameArray = name.split('/');
+            this.name = nameArray.join('_').replace('@',''); 
+
+        }else{
+            this.name = name; // 项目名称
+        }
         this.version = version; // 项目版本
         this.dir = dir; // 源码目录
         this.git = SimpleGit(dir)// simple git实例
@@ -109,7 +117,36 @@ class Git{
        await this.checkGitOwner() // 确认远程仓库类型：user/orgs
        await this.checkRepo() // 检查并创建远程仓库
        await this.checkGitIgnore() // 检查并床.gitignore文件
-       await this.init()
+       await this.checkComponent() // 组件合法性检查
+       await this.init() // 完成本地仓库初始化
+    }
+
+    async checkComponent(){
+        let componentFile = this.isComponent();
+        if(componentFile){
+            log.info('开始检查build结果')
+            if(!this.buildCmd){
+                this.buildCmd = 'npm run build'
+            }
+            require('child_process').execSync(this.buildCmd, {
+                cwd: this.dir,
+            })
+            const buildPath = path.resolve(this.dir,componentFile.buildPath)
+            if(!fs.existsSync(buildPath)){
+                throw new Error(`构建结果：${buildPath}不存在`)
+            }
+            const pkg = this.getPackageJson()
+            if(!pkg.files || !pkg.files.includes(componentFile.buildPath)){
+                throw new Error(`package.json中files属性未添加构建结果目录：[${componentFile.buildPath}], 请在package.json中手动添加`)
+            }
+            log.success('build结果检查通过')
+        }
+    }
+
+    // 是否是组件
+    isComponent(){
+        const componentFilePath = path.resolve(this.dir, COMPONENT_FILE)
+        return fs.existsSync(componentFilePath) && fse.readJSONSync(componentFilePath)
     }
 
     checkHomePath(){
@@ -319,20 +356,28 @@ pnpm-debug.log*
     }
 
     async publish(){
-        await this.preparePublish()
-        console.log('aa', this.gitPublish)
-        const cloudBuild = new CloudBuild(this,{
-            buildCmd: this.buildCmd,
-            type: this.gitPublish,
-            prod: this.prod     
-        })
-        await cloudBuild.prepare()
-        await cloudBuild.init();
-        const ret = await cloudBuild.build();
-        if(ret){
-            await this.uploadTemplate()
+        let ret = false;
+        if(this.isComponent()){
+            log.info('开始发布组件')
+            await this.saveComponentToDB();
+
+        }else{
+            await this.preparePublish()
+            console.log('aa', this.gitPublish)
+            const cloudBuild = new CloudBuild(this,{
+                buildCmd: this.buildCmd,
+                type: this.gitPublish,
+                prod: this.prod     
+            })
+            await cloudBuild.prepare()
+            await cloudBuild.init();
+             ret = await cloudBuild.build();
+            if(ret){
+                await this.uploadTemplate()
+            }
         }
         if(this.prod && ret){
+            await this.uploadComponentToNpm()
             // 打tag
             await this.checkTag()
             await this.checkoutBranch('master') // 切换分支到master
@@ -341,6 +386,14 @@ pnpm-debug.log*
             await this.deleteLocalBranch() // 删除本地开发分支
             await this.deleteRemoteBranch() // 删除远程开发分支
         }
+    }
+
+    async uploadComponentToNpm(){
+        // 完成组件上传npm
+    }
+    async saveComponentToDB(){
+        // 1.将组件信息上传到数据库
+        // 2.将组件多预览页面上传到oss
     }
 
     async deleteLocalBranch(){

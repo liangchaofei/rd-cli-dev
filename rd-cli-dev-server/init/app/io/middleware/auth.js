@@ -2,14 +2,13 @@
 
 'use strict';
 
-const helper = require('../../extend/helper');
 const { createCloudBuildTask } = require('../../models/CloudBuildTask');
 
 const REDIS_PREFIX = 'cloudbuild';
 
 module.exports = () => {
   return async (ctx, next) => {
-    const { app, socket, logger } = ctx;
+    const { app, socket, logger, helper } = ctx;
     const { id } = socket;
     const { redis } = app;
     const query = socket.handshake.query;

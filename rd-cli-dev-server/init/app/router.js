@@ -11,6 +11,7 @@ module.exports = app => {
   router.get('/redis/test', controller.project.getRedis);
   router.get('/oss/get', controller.project.getOssFile);
 
+  router.get('/api/v1/componentSite', controller.v1.componentSite.index);
   app.io.route('build', app.io.controller.build.index);
 
 };

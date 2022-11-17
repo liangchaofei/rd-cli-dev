@@ -681,15 +681,12 @@ pnpm-debug.log*
         await this.checkConflicted() // 检查冲突
         await this.checkNotCommitted() // 检查未提交的代码
         // 如果远程有代码分支
-        console.log('rrr', await this.checkRemoteMaster())
         if(await this.checkRemoteMaster()){
-            console.log('1')
                 // 本地和远程合并
                 await this.pullRemoteRepo('master',{
                     '--allow-unrelated-histories':null // 强行两个commit代码合并
                 })
         }else{
-            console.log('2')
             // 推送代码
             await this.pushRemoteRepo('master')
         }

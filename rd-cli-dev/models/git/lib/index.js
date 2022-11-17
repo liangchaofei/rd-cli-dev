@@ -149,7 +149,7 @@ class Git{
         const componentFilePath = path.resolve(this.dir, COMPONENT_FILE)
         return fs.existsSync(componentFilePath) && fse.readJSONSync(componentFilePath)
     }
-
+    
     checkHomePath(){
         if(!this.homePath){
             if(process.env.CLI_HOME_PATH){
@@ -294,7 +294,7 @@ class Git{
                     repo = await this.gitServer.createRepo(this.name)
                 }else{
                     // 组织
-                    this,this.gitServer.createOrgRepo(this.name, this.login)
+                    repo = await this.gitServer.createOrgRepo(this.name, this.login)
                 }
             }catch(e){
                 log.error(e)
